@@ -14,7 +14,7 @@
         <div class="row py-3">
           <div class="col-md-7">
             <h2 class="mb-3">產品列表</h2>
-            <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#productModal" @click="judgeBtn('new')">新增產品</button>
+            <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#productModal" @click="judgeModal('new')">新增產品</button>
             <table class="table table-hover mt-4">
               <thead>
                 <tr>
@@ -34,13 +34,13 @@
                   <td width="120">{{ item.price }} 元</td>
                   <td width="150"><span class="text-success" v-if="item.is_enabled">啟用</span><span class="text-danger" v-else="v-else">未啟用</span></td>
                   <td width="130">
-                    <button class="btn btn-primary" type="button" @click="judgeBtn('showDetail',item)">查看細節</button>
+                    <button class="btn btn-primary" type="button" @click="judgeModal('showDetail',item)">查看細節</button>
                   </td>
                   <td width="120">
-                    <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#productModal" @click="judgeBtn('edit',item)">編輯</button>
+                    <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#productModal" @click="judgeModal('edit',item)">編輯</button>
                   </td>
                   <td width="120">
-                    <button class="btn btn-outline-danger" type="button" @click="judgeBtn('delete',item)" data-bs-toggle="modal" data-bs-target="#delProductModal">刪除</button>
+                    <button class="btn btn-outline-danger" type="button" @click="judgeModal('delete',item)" data-bs-toggle="modal" data-bs-target="#delProductModal">刪除</button>
                   </td>
                 </tr>
               </tbody>
@@ -85,11 +85,26 @@
                       <input class="form-control" type="text" placeholder="請輸入圖片連結" v-model="temp.imageUrl"/>
                     </div><img class="img-fluid" :src="temp.imageUrl" alt=""/>
                   </div>
-                  <div>
-                    <button class="btn btn-outline-primary btn-sm d-block w-100">新增圖片</button>
+                  <!-- 此段參考範例再做修改-->
+                  <!-- 當有 imagesUrl 陣列的時候顯示圖片及 圖片網址input、刪除按鈕-->
+                  <div v-if="temp.imagesUrl">
+                    <!-- 跑 v-for 印出陣列內容-->
+                    <h2 v-if="temp.imagesUrl.length">更多圖片</h2>
+                    <div class="mb-1" v-for="(image, index) in temp.imagesUrl" :key="index">
+                      <div class="mb-3">
+                        <label class="form-label" for="imageUrl">圖片網址</label>
+                        <input class="form-control mb-2" v-model="temp.imagesUrl[index]" type="text" placeholder="請輸入圖片連結"/>
+                      </div><img class="img-fluid mb-2" :src="image"/>
+                      <input class="btn btn-outline-danger w-100" type="button" value="刪除圖片" @click="delImage(index)"/>
+                    </div>
+                    <!-- 如果陣列為空或是當前陣列長度-1就顯示新增圖片按鈕-->
+                    <div v-if="!temp.imagesUrl.length || temp.imagesUrl[temp.imagesUrl.length - 1]">
+                      <button class="btn btn-outline-primary btn-sm d-block w-100" @click="temp.imagesUrl.push('')">新增圖片</button>
+                    </div>
                   </div>
+                  <!-- 當沒有 imagesUrl 陣列時顯示新增圖片按鈕-->
                   <div v-else="">
-                    <button class="btn btn-outline-danger btn-sm d-block w-100">刪除圖片</button>
+                    <button class="btn btn-outline-primary btn-sm d-block w-100" @click="createImages">新增圖片</button>
                   </div>
                 </div>
                 <div class="col-sm-8">
@@ -171,11 +186,19 @@
         data(){
           return {
             products: [],
-            temp: {},
+            temp: {
+            },
           }
         },
         methods: {
-          judgeBtn(isNew,item){
+          delImage(id){ 
+            this.temp.imagesUrl.splice(id,1); //帶入傳入的索引值，使用 splice 刪除
+          },
+          createImages() {
+            this.temp.imagesUrl = []; // 新增空字串
+            this.temp.imagesUrl.push(''); // 再將內容推入
+          },
+          judgeModal(isNew,item){
             switch(isNew){
               case 'new':
                 this.temp = {};
@@ -205,6 +228,7 @@
                 "content": this.temp.content,
                 "is_enabled": this.temp.is_enabled,
                 "imageUrl": this.temp.imageUrl,
+                "imagesUrl":[this.temp.imagesUrl][0] 
               }
             }
       
